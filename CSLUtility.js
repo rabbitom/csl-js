@@ -38,14 +38,28 @@ export default class CSLUtility {
         return chars.join(glue);
     }
 
-    static fromHexString(str) {
-        var length = str.length / 2;
-        var array = new Uint8Array(length);
-        for (var i = 0; i < length; i++) {
-            var substr = str.slice(i * 2, i * 2 + 2);
-            array[i] = parseInt(substr, 16);
+    static arrayFromHexString(str) {
+        var strLength = str.length;
+        var maxLength = (strLength + 1) / 2;
+        var array = new Uint8Array(maxLength);
+        var arrayIndex = 0;
+        var previousN = NaN;
+        for (var i = 0; i < strLength; i++) {
+            var char = str.slice(i, i + 1);
+            var n = parseInt(char, 16);
+            if(!isNaN(previousN)) {
+                if(isNaN(n))
+                    array[arrayIndex++] = previousN;
+                else
+                    array[arrayIndex++] = previousN * 0x10 + n;
+                previousN = NaN;
+            }
+            else
+                previousN = n;
         }
-        return array.buffer;
+        if(!isNaN(previousN))
+            array[arrayIndex++] = previousN;
+        return array.subarray(0, arrayIndex);
     }
 
     //from http://jsperf.com/uint8array-vs-array-encode-to-utf8/2
