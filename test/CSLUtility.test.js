@@ -22,7 +22,7 @@ describe('CSLUtility', ()=>{
     
     describe("hex", ()=>{
         let string = CSLUtility.toHexString([1,10,255], 0, 3, "-");
-        should(string).equal("01-0a-ff");
+        should(string).equal("01-0A-FF");
         let buffer = CSLUtility.fromHexString("120AFF");
         let array = new Uint8Array(buffer);
         should(array[0]).equal(0x12);

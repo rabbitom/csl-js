@@ -29,8 +29,12 @@ export default class CSLUtility {
     static toHexString(buffer, offset, length, glue) {
         var array = new Uint8Array(buffer);
         var chars = [];
-        for(var n of array)
-            chars.push((n >= 16) ? n.toString(16) : ('0' + n.toString(16)));
+        for(var n of array) {
+            var char = n.toString(16).toUpperCase();
+            if(n < 16)
+                char = "0" + char;
+            chars.push(char);
+        }
         return chars.join(glue);
     }
 
