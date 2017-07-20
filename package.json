@@ -1,0 +1,29 @@
+{
+  "name": "csl-js",
+  "version": "0.0.1",
+  "description": "Common Serialization Library",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --require babel-core/register"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rabbitom/csl-js.git"
+  },
+  "keywords": [
+    "serialization"
+  ],
+  "author": "Tom",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/rabbitom/csl-js/issues"
+  },
+  "homepage": "https://github.com/rabbitom/csl-js#readme",
+  "devDependencies": {
+    "babel-core": "^6.25.0",
+    "babel-loader": "^7.1.1",
+    "babel-preset-env": "^1.6.0",
+    "mocha": "^3.4.2",
+    "should": "^11.2.1"
+  }
+}
