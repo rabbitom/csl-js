@@ -9,7 +9,6 @@ export default class CSLUtility {
         var result = 0;
         for(var i=length-1; i>=0; i--) {
             result = result * 0x100 + array[offset+i];
-            console.log("result = " + result);
         }
         return result;
     }
@@ -35,7 +34,7 @@ export default class CSLUtility {
         return chars.join(glue);
     }
 
-    static fromHexString(string) {
+    static fromHexString(str) {
         var length = str.length / 2;
         var array = new Uint8Array(length);
         for (var i = 0; i < length; i++) {
