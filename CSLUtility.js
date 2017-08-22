@@ -13,6 +13,11 @@ export default class CSLUtility {
         return result;
     }
 
+    static writeIntLE(value, array, offset, length) {
+        for(var i=0; i<length; i++)
+            array[offset+i] = (value >> (8 * i)) & 0xff;
+    }
+
     static toIntBE(buffer, offset, length) {
         var array = new Uint8Array(buffer);
         if(offset === undefined)
@@ -24,6 +29,11 @@ export default class CSLUtility {
             result = result * 0x100 + array[offset+i];
         }
         return result;
+    }
+
+    static writeIntBE(value, array, offset, length) {
+        for(var i=0; i<length; i++)
+            array[offset + (length - 1 - i)] = (value >> (8 * i)) & 0xff;
     }
 
     static toHexString(buffer, offset, length, glue) {
