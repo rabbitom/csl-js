@@ -92,12 +92,15 @@ export default class CSLMessage {
 
     decodeField(buffer, offset, length, field) {
         switch(field.type) {
+            case 'fixed':
             case 'variable': {
                 if((length !== undefined) && (length < field.length))
                     return;
                 else
                     length = field.length;
                 var value = this.decodeValue(buffer, offset, length, field.format);
+                if((field.type == 'fixed') && (value != field.value[0]))
+                    return;
                 var object = new Object();
                 object[field.name] = value;
                 return object;
@@ -107,6 +110,8 @@ export default class CSLMessage {
                 var iOffset = 0;
                 for(var iField of field.value) {
                     var iObject = this.decodeField(buffer, iOffset, iField.length, iField);
+                    if(iObject === undefined)
+                        return;
                     iOffset += iField.length;
                     for(var key in iObject)
                         object[key] = iObject[key];

@@ -103,6 +103,21 @@ describe('encode', ()=>{
 
 describe('decode', ()=>{
 
+    describe('decode-fix', ()=>{
+        var pattern = {
+            "name": "command",
+            "length": 1,
+            "type": "fixed",
+            "format": "int",
+            "value": [1]
+        }
+        var csl = new CSLMessage(pattern);
+        var a = csl.decode([1]);
+        should(a["command"]).equal(1);
+        var b = csl.decode([2]);
+        should(b).equal(undefined);
+    });
+
     describe('decode-var', ()=>{
         var pattern = {
             "name": "battery-level",
@@ -205,11 +220,57 @@ describe('combination', ()=>{
         should(a["command"]).equal(commandId);
         should(a["name"]).equal(str);
     });
-    describe('combination-codec', ()=>{
-        var array = csl.encode({
-            "command": commandId,
+    // describe('combination-codec', ()=>{
+    //     var array = csl.encode({
+    //         "command": commandId,
+    //         "name": str
+    //     });
+    //     var a = csl.decode(array);
+    //     should(a["command"]).equal(commandId);
+    //     should(a["name"]).equal(str);
+    // });
+});
+
+describe('combination-fix', ()=>{
+    var commandId = 2;
+    var str = 'item name';
+    var pattern = {
+        "length": 16,
+        "type": "combination",
+        "value": [
+            {
+                "name": "command",
+                "length": 1,
+                "type": "fixed",
+                "format": "int",
+                "value": [commandId]
+            },
+            {
+                "name": "name",
+                "type": "variable",
+                "length": 15,
+                "format": "string"
+            }
+        ]
+    }
+    var csl = new CSLMessage(pattern);
+    describe('combination-fix-encode', ()=>{
+        var a = csl.encode({
             "name": str
         });
+        should(a.length).equal(16);
+        should(a[0]).equal(commandId);
+        for(var i=0; i<15; i++)
+            if(i < str.length)
+                should(a[1+i]).equal(str.charCodeAt(i));
+            else
+                should(a[1+i]).equal(0);
+    });
+    describe('combination-fix-decode', ()=>{
+        var array = new Array(1+str.length);
+        array[0] = commandId;
+        for(var i=0; i<str.length; i++)
+            array[1+i] = str.charCodeAt(i);
         var a = csl.decode(array);
         should(a["command"]).equal(commandId);
         should(a["name"]).equal(str);
