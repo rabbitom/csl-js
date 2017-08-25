@@ -28,12 +28,26 @@ export default class CSLMessage {
             field = this.fields[filedId];
         if(field == null)
             return;
+        return this.encodeField(object, field);
+    }
+
+    encodeField(object, field) {
         switch(field.type) {
             case 'fixed':
                 return this.encodeValue(field.length, field.format, field.value);
             case 'variable': {
                 var value = object[field.name];
                 return this.encodeValue(field.length, field.format, value);
+            }
+            case 'combination': {
+                var array = new Uint8Array(field.length);
+                var offset = 0;
+                for(var iField of field.value) {
+                    var iArray = this.encodeField(object, iField);
+                    array.set(iArray, offset);
+                    offset += iArray.length;
+                }
+                return array;
             }
         }
     }

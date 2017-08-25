@@ -160,3 +160,37 @@ describe('decode', ()=>{
         should(a["name"]).equal(str);
     });
 });
+
+describe('combination', ()=>{
+    var str = 'item name';
+    var pattern = {
+        "length": 16,
+        "type": "combination",
+        "value": [
+            {
+                "name": "command",
+                "length": 1,
+                "type": "fixed",
+                "format": "int",
+                "value": [2]
+            },
+            {
+                "name": "name",
+                "type": "variable",
+                "length": 15,
+                "format": "string"
+            }
+        ]
+    }
+    var csl = new CSLMessage(pattern);
+    var a = csl.encode({
+        "name": str
+    });
+    should(a.length).equal(16);
+    should(a[0]).equal(2);
+    for(var i=0; i<15; i++)
+        if(i < str.length)
+            should(a[1+i]).equal(str.charCodeAt(i));
+        else
+            should(a[1+i]).equal(0);
+});
