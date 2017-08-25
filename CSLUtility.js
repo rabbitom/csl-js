@@ -112,13 +112,16 @@ export default class CSLUtility {
         if(offset === undefined)
             offset = 0;
         var end;
-        if(length === undefined)
+        if(length !== undefined)
             end = offset + length + 1;
-        else
+        else {
             end = array.indexOf(0, offset);
-        if(end == 0)
-            return '';
-        var arr = (end > 0) ? array.slice(0, end) : array;
+            if(end == 0)
+                return '';
+            else if(end == -1)
+                end = array.length;
+        }
+        var arr = (end > 0) ? array.slice(offset, end) : array;
         var encodedString = String.fromCharCode.apply(null, arr),
             decodedString = decodeURIComponent(escape(encodedString));
         return decodedString;

@@ -87,15 +87,32 @@ export default class CSLMessage {
             field = this.fields[filedId];
         if(field == null)
             return;
-        if(field.type == 'variable') {
-            if((length !== undefined) && (length < field.length))
-                return;
-            else
-                length = field.length;
-            var value = this.decodeValue(buffer, offset, length, field.format);
-            var object = new Object();
-            object[field.name] = value;
-            return object;
+        return this.decodeField(buffer, offset, length, field);
+    }
+
+    decodeField(buffer, offset, length, field) {
+        switch(field.type) {
+            case 'variable': {
+                if((length !== undefined) && (length < field.length))
+                    return;
+                else
+                    length = field.length;
+                var value = this.decodeValue(buffer, offset, length, field.format);
+                var object = new Object();
+                object[field.name] = value;
+                return object;
+            }
+            case 'combination': {
+                var object = new Object();
+                var iOffset = 0;
+                for(var iField of field.value) {
+                    var iObject = this.decodeField(buffer, iOffset, iField.length, iField);
+                    iOffset += iField.length;
+                    for(var key in iObject)
+                        object[key] = iObject[key];
+                }
+                return object;
+            }
         }
     }
 

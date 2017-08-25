@@ -162,6 +162,7 @@ describe('decode', ()=>{
 });
 
 describe('combination', ()=>{
+    var commandId = 2;
     var str = 'item name';
     var pattern = {
         "length": 16,
@@ -170,9 +171,8 @@ describe('combination', ()=>{
             {
                 "name": "command",
                 "length": 1,
-                "type": "fixed",
-                "format": "int",
-                "value": [2]
+                "type": "variable",
+                "format": "int"
             },
             {
                 "name": "name",
@@ -183,14 +183,35 @@ describe('combination', ()=>{
         ]
     }
     var csl = new CSLMessage(pattern);
-    var a = csl.encode({
-        "name": str
+    describe('combination-encode', ()=>{
+        var a = csl.encode({
+            "command": commandId,
+            "name": str
+        });
+        should(a.length).equal(16);
+        should(a[0]).equal(commandId);
+        for(var i=0; i<15; i++)
+            if(i < str.length)
+                should(a[1+i]).equal(str.charCodeAt(i));
+            else
+                should(a[1+i]).equal(0);
     });
-    should(a.length).equal(16);
-    should(a[0]).equal(2);
-    for(var i=0; i<15; i++)
-        if(i < str.length)
-            should(a[1+i]).equal(str.charCodeAt(i));
-        else
-            should(a[1+i]).equal(0);
+    describe('combination-decode', ()=>{
+        var array = new Array(1+str.length);
+        array[0] = commandId;
+        for(var i=0; i<str.length; i++)
+            array[1+i] = str.charCodeAt(i);
+        var a = csl.decode(array);
+        should(a["command"]).equal(commandId);
+        should(a["name"]).equal(str);
+    });
+    describe('combination-codec', ()=>{
+        var array = csl.encode({
+            "command": commandId,
+            "name": str
+        });
+        var a = csl.decode(array);
+        should(a["command"]).equal(commandId);
+        should(a["name"]).equal(str);
+    });
 });
