@@ -107,9 +107,15 @@ export default class CSLUtility {
         return utf8.subarray(0, idx);
     }
 
-    static toString(buffer) {
+    static toString(buffer, offset, length) {
         var array = new Uint8Array(buffer);
-        var end = array.indexOf(0);
+        if(offset === undefined)
+            offset = 0;
+        var end;
+        if(length === undefined)
+            end = offset + length + 1;
+        else
+            end = array.indexOf(0, offset);
         if(end == 0)
             return '';
         var arr = (end > 0) ? array.slice(0, end) : array;

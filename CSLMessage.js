@@ -67,7 +67,36 @@ export default class CSLMessage {
         return array;
     }
 
-    decode(buffer, offset, length) {
+    decode(buffer, offset, length, fieldId) {
+        var field = this.defaultField;
+        if(fieldId !== undefined)
+            field = this.fields[filedId];
+        if(field == null)
+            return;
+        if(field.type == 'variable') {
+            if((length !== undefined) && (length < field.length))
+                return;
+            else
+                length = field.length;
+            var value = this.decodeValue(buffer, offset, length, field.format);
+            var object = new Object();
+            object[field.name] = value;
+            return object;
+        }
+    }
 
+    decodeValue(buffer, offset, length, format) {
+        switch(format) {
+            case 'int':
+            case 'int.le':
+                return CSLUtility.toIntLE(buffer, offset, length);
+            case 'int.be':
+                return CSLUtility.toIntBE(buffer, offset, length);
+            case 'string':
+                return CSLUtility.toString(buffer, offset, length);
+            case 'bcd':
+                var bcd = buffer[offset];
+                return (bcd >> 4) * 10 + (bcd % 16);
+        }
     }
 }

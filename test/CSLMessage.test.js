@@ -1,7 +1,7 @@
 import should from 'should';
 import CSLMessage from '../CSLMessage';
 
-describe('CSLMessage', ()=>{
+describe('encode', ()=>{
 
     describe('encode-fixed', ()=>{
         var pattern = {
@@ -98,5 +98,65 @@ describe('CSLMessage', ()=>{
         });
         should(a.length).equal(1);
         should(a[0]).equal(0x17);
+    });
+});
+
+describe('decode', ()=>{
+
+    describe('decode-var', ()=>{
+        var pattern = {
+            "name": "battery-level",
+            "length": 1,
+            "type": "variable",
+            "format": "int"
+        }
+        var csl = new CSLMessage(pattern);
+        var a = csl.decode([1]);
+        should(a["battery-level"]).equal(1);
+    });
+
+    describe('decode-int', ()=>{
+        var time = Math.floor(new Date().getTime()/1000);
+        var array = [time % 0x100, (time >> 8) % 0x100, (time >> 16) % 0x100, (time >> 24) % 0x100];
+        var pattern = {
+            "name": "start-time",
+            "length": 4,
+            "type": "variable",
+            "format": "int.le"
+        }
+        var csl = new CSLMessage(pattern);
+        var a = csl.decode(array);
+        should(a["start-time"]).equal(time);
+    });
+
+    describe('decode-be', ()=>{
+        var time = Math.floor(new Date().getTime()/1000);
+        var array = [(time >> 24) % 0x100, (time >> 16) % 0x100, (time >> 8) % 0x100, time % 0x100];
+        var pattern = {
+            "name": "start-time",
+            "length": 4,
+            "type": "variable",
+            "format": "int.be"
+        }
+        var csl = new CSLMessage(pattern);
+        var a = csl.decode(array);
+        should(a["start-time"]).equal(time);
+    });
+
+    describe('decode-str', ()=>{
+        var str = 'item name';
+        var array = new Array(str.length);
+        for(var i=0; i<str.length; i++)
+            array[i] = str.charCodeAt(i);
+        var maxLength = 15;
+        var pattern = {
+            "name": "name",
+            "type": "variable",
+            "length": maxLength,
+            "format": "string"
+        }
+        var csl = new CSLMessage(pattern);
+        var a = csl.decode(array);
+        should(a["name"]).equal(str);
     });
 });
