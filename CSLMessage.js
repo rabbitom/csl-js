@@ -38,6 +38,16 @@ export default class CSLMessage {
     }
 
     encodeField(object, field) {
+        if(field.template) {
+            var template = this.templates.get(field.template);
+            if(template === undefined)
+                throw "no template found: " + field.template;
+            for(var key in template) {
+                if((key != 'id') && (key != 'as-template') && (field[key] === undefined))
+                    field[key] = template[key];
+            }
+            field.template = null;
+        }
         switch(field.type) {
             case 'fixed':
                 return this.encodeValue(field.length, field.format, field.value);

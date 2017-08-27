@@ -382,3 +382,86 @@ describe('index', ()=>{
         should(b.name).equal(a.name);
     })
 });
+
+describe('template', ()=>{
+    var batteryId = 1;
+    var itemNameId = 2;
+    var pattern = [
+        {
+            "id": "battery-get",
+            "name": "command",
+            "length": 1,
+            "type": "fixed",
+            "format": "int",
+            "value": [batteryId],
+            "as-template": "command"
+        },
+        {
+            "id": "battery-data",
+            "length": 2,
+            "type": "combination",
+            "value": [
+                {
+                    "template": "command",
+                    "value": [batteryId]
+                },
+                {
+                    "name": "battery-level",
+                    "length": 1,
+                    "type": "variable",
+                    "format": "int"
+                }
+            ]
+        },
+        {
+            "id": "item-name-data",
+            "length": 16,
+            "type": "combination",
+            "as-template": "item-name",
+            "value": [
+                {
+                    "template": "command",
+                    "value": [itemNameId]
+                },
+                {
+                    "name": "name",
+                    "type": "variable",
+                    "length": 15,
+                    "format": "string"
+                }
+            ]
+        }
+    ];
+    var batteryLevel = 4;
+    var str = 'item name';
+    var csl = new CSLMessage(pattern);
+    describe('template-encode-1', ()=>{
+        var a = {
+            "battery-level": batteryLevel
+        }
+        var array = csl.encode(a, 'battery-data');
+        should(array.length).equal(2);
+        should(array[0]).equal(batteryId);
+        should(array[1]).equal(batteryLevel);
+    });
+    describe('template-encode-2', ()=>{
+        var a = {
+            "name": str
+        }
+        var array = csl.encode(a, 'item-name-data');
+        should(array.length).equal(16);
+        should(array[0]).equal(itemNameId);
+        for(var i=0; i<15; i++) {
+            if(i < str.length)
+                array[1+i] = str.charCodeAt(i);
+            else
+                array[1+i] = 0;
+        }
+    });
+    describe('template-decode', ()=>{
+        var array = [batteryId, batteryLevel];
+        var a = csl.decode(array, 0, 2, 'battery-data');
+        should(a.command).equal(batteryId);
+        should(a["battery-level"]).equal(batteryLevel);
+    });
+});
