@@ -287,6 +287,7 @@ describe('index', ()=>{
     var pattern = [
         {
             "id": "cmc-command",
+            "name": "command",
             "length": 1,
             "type": "index",
             "format": "int",
@@ -297,7 +298,7 @@ describe('index', ()=>{
                 },
                 {
                     "value": itemNameId,
-                    "id": "item-name-response"
+                    "id": "item-name-data"
                 }
             ]
         },
@@ -322,7 +323,7 @@ describe('index', ()=>{
             ]
         },
         {
-            "id": "item-name-response",
+            "id": "item-name-data",
             "length": 16,
             "type": "combination",
             "as-template": "item-name",
@@ -341,16 +342,43 @@ describe('index', ()=>{
                     "format": "string"
                 }
             ]
-        },
+        }
     ];
-    var csl = new CSLMessage(pattern);
-    var battery = csl.decode([batteryId, 1]);
-    should(battery["battery-level"]).equal(1);
     var str = 'item name';
-    var array = new Array(1+str.length);
-    array[0] = itemNameId;
-    for(var i=0; i<str.length; i++)
-        array[1+i] = str.charCodeAt(i);
-    var itemName = csl.decode(array);
-    should(itemName.name).equal(str);
+    var csl = new CSLMessage(pattern);
+    describe('index-decode', ()=>{
+        var battery = csl.decode([batteryId, 1]);
+        should(battery["battery-level"]).equal(1);
+        var array = new Array(1+str.length);
+        array[0] = itemNameId;
+        for(var i=0; i<str.length; i++)
+            array[1+i] = str.charCodeAt(i);
+        var itemName = csl.decode(array);
+        should(itemName.name).equal(str);
+    });
+    describe('index-encode', ()=>{
+        var a = {
+            "command": itemNameId,
+            "name": str
+        }
+        var array = csl.encode(a);
+        should(array.length).equal(16);
+        should(array[0]).equal(itemNameId);
+        for(var i=0; i<15; i++) {
+            if(i < str.length)
+                array[1+i] = str.charCodeAt(i);
+            else
+                array[1+i] = 0;
+        }
+    });
+    describe('index-codec', ()=>{
+        var a = {
+            "command": itemNameId,
+            "name": str
+        }
+        var array = csl.encode(a);
+        var b = csl.decode(array);
+        should(b.command).equal(a.command);
+        should(b.name).equal(a.name);
+    })
 });

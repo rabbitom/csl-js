@@ -31,9 +31,9 @@ export default class CSLMessage {
     encode(object, fieldId) {
         var field = this.defaultField;
         if(fieldId !== undefined)
-            field = this.fields[fieldId];
+            field = this.fields.get(fieldId);
         if(field == null)
-            return;
+            throw "no field to encode: " + fieldId;
         return this.encodeField(object, field);
     }
 
@@ -44,6 +44,13 @@ export default class CSLMessage {
             case 'variable': {
                 var value = object[field.name];
                 return this.encodeValue(field.length, field.format, value);
+            }
+            case 'index': {
+                var value = object[field.name];
+                for(var item of field.value) {
+                    if(item.value == value)
+                        return this.encode(object, item.id);
+                }
             }
             case 'combination': {
                 var array = new Uint8Array(field.length);
