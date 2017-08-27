@@ -145,7 +145,7 @@ export default class CSLMessage {
             case 'int.be':
                 return CSLUtility.toIntBE(buffer, offset, length);
             case 'string':
-                return CSLUtility.toString(buffer, offset, length);
+                return CSLUtility.toString(buffer, offset, length).replace(/\u0000+$/, '');
             case 'bcd':
                 var bcd = buffer[offset];
                 return (bcd >> 4) * 10 + (bcd % 16);

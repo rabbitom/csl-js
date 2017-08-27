@@ -224,15 +224,15 @@ describe('combination', ()=>{
         should(a["command"]).equal(commandId);
         should(a["name"]).equal(str);
     });
-    // describe('combination-codec', ()=>{
-    //     var array = csl.encode({
-    //         "command": commandId,
-    //         "name": str
-    //     });
-    //     var a = csl.decode(array);
-    //     should(a["command"]).equal(commandId);
-    //     should(a["name"]).equal(str);
-    // });
+    describe('combination-codec', ()=>{
+        var array = csl.encode({
+            "command": commandId,
+            "name": str
+        });
+        var a = csl.decode(array);
+        should(a["command"]).equal(commandId);
+        should(a["name"]).equal(str);
+    });
 });
 
 describe('combination-fix', ()=>{
