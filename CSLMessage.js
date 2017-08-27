@@ -72,6 +72,21 @@ export default class CSLMessage {
                 }
                 return array;
             }
+            case 'array': {
+                if(!(object instanceof Array))
+                    throw "could not encode object as array";
+                var array = new Uint8Array(field.length);
+                var offset = 0;
+                var itemField = field.value[0];
+                for(var i=0; i<object.length; i++) {
+                    var itemArray = this.encodeField(object[i], itemField);
+                    if(offset + itemArray.length > field.length)
+                        throw 'array is too short';
+                    array.set(itemArray, offset);
+                    offset += itemArray.length;
+                }
+                return array;
+            }
         }
     }
 

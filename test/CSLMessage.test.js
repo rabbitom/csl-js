@@ -465,3 +465,52 @@ describe('template', ()=>{
         should(a["battery-level"]).equal(batteryLevel);
     });
 });
+
+describe('array', ()=>{
+    var pattern = {
+        "type": "array",
+        "length": 6,
+        "value": [
+            {
+                "length": 2,
+                "type": "combination",
+                "value": [
+                    {
+                        "name": "time",
+                        "length": 1,
+                        "type": "variable",
+                        "format": "int"
+                    },
+                    {
+                        "name": "interval",
+                        "length": 1,
+                        "type": "variable",
+                        "format": "int"
+                    }
+                ]
+            }
+        ]
+    }
+    var csl = new CSLMessage(pattern);
+    var array = csl.encode([
+        {
+            "time": 1,
+            "interval": 1
+        },
+        {
+            "time": 2,
+            "interval": 2
+        },
+        {
+            "time": 3,
+            "interval": 3
+        }
+    ]);
+    should(array.length).equal(6);
+    should(array[0]).equal(1);
+    should(array[1]).equal(1);
+    should(array[2]).equal(2);
+    should(array[3]).equal(2);
+    should(array[4]).equal(3);
+    should(array[5]).equal(3);
+});
