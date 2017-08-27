@@ -114,7 +114,11 @@ describe('decode', ()=>{
         var csl = new CSLMessage(pattern);
         var a = csl.decode([1]);
         should(a["command"]).equal(1);
-        var b = csl.decode([2]);
+        try {
+            var b = csl.decode([2]);
+        }
+        catch (err) {
+        }
         should(b).equal(undefined);
     });
 
@@ -275,4 +279,78 @@ describe('combination-fix', ()=>{
         should(a["command"]).equal(commandId);
         should(a["name"]).equal(str);
     });
+});
+
+describe('index', ()=>{
+    var batteryId = 1;
+    var itemNameId = 2;
+    var pattern = [
+        {
+            "id": "cmc-command",
+            "length": 1,
+            "type": "index",
+            "format": "int",
+            "value": [
+                {
+                    "value": batteryId,
+                    "id": "battery-response"
+                },
+                {
+                    "value": itemNameId,
+                    "id": "item-name-response"
+                }
+            ]
+        },
+        {
+            "id": "battery-response",
+            "length": 2,
+            "type": "combination",
+            "value": [
+                {
+                    "name": "command",
+                    "length": 1,
+                    "type": "fixed",
+                    "format": "int",
+                    "value": [batteryId]
+                },
+                {
+                    "name": "battery-level",
+                    "length": 1,
+                    "type": "variable",
+                    "format": "int"
+                }
+            ]
+        },
+        {
+            "id": "item-name-response",
+            "length": 16,
+            "type": "combination",
+            "as-template": "item-name",
+            "value": [
+                {
+                    "name": "command",
+                    "length": 1,
+                    "type": "fixed",
+                    "format": "int",
+                    "value": [itemNameId]
+                },
+                {
+                    "name": "name",
+                    "type": "variable",
+                    "length": 15,
+                    "format": "string"
+                }
+            ]
+        },
+    ];
+    var csl = new CSLMessage(pattern);
+    var battery = csl.decode([batteryId, 1]);
+    should(battery["battery-level"]).equal(1);
+    var str = 'item name';
+    var array = new Array(1+str.length);
+    array[0] = itemNameId;
+    for(var i=0; i<str.length; i++)
+        array[1+i] = str.charCodeAt(i);
+    var itemName = csl.decode(array);
+    should(itemName.name).equal(str);
 });

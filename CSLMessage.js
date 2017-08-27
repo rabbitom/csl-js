@@ -4,28 +4,34 @@ export default class CSLMessage {
 
     constructor(pattern) {
         //de could mean definition
-        this.fields = new Map();
-        this.templates = new Map();
+        var fields = new Map();
+        var templates = new Map();
         var addField = function(field) {
             if(field.id)
-                this.fields.set(field.id, field);
-            // if(field['as-template'])
-            //     this.templates.set(field['as-template'], field);
-            if(field.type == 'enum') {
-                for(var subField of field.values)
+                fields.set(field.id, field);
+            if(field['as-template'])
+                templates.set(field['as-template'], field);
+            if((field.type == 'combination') || (field.type == 'array'))
+                for(var subField of field.value)
                     addField(subField);
-            }
         }
-        if(pattern.id)
-            addField(pattern);
-        else
+        if(pattern instanceof Array) {
+            for(var field of pattern)
+                addField(field);
+            this.defaultField = pattern[0];
+        }
+        else {
             this.defaultField = pattern;
+            addField(pattern);
+        }
+        this.fields = fields;
+        this.templates = templates;
     }
 
-    encode(object, filedId) {
+    encode(object, fieldId) {
         var field = this.defaultField;
-        if(filedId !== undefined)
-            field = this.fields[filedId];
+        if(fieldId !== undefined)
+            field = this.fields[fieldId];
         if(field == null)
             return;
         return this.encodeField(object, field);
@@ -84,30 +90,40 @@ export default class CSLMessage {
     decode(buffer, offset, length, fieldId) {
         var field = this.defaultField;
         if(fieldId !== undefined)
-            field = this.fields[filedId];
+            field = this.fields.get(fieldId);
         if(field == null)
-            return;
+            throw "no field to decode: " + fieldId;
+            //return;
         return this.decodeField(buffer, offset, length, field);
     }
 
     decodeField(buffer, offset, length, field) {
+        if(offset === undefined)
+            offset = 0;
+        if((length !== undefined) && (length < field.length))
+            throw "length too short for field";
+            //return;
         switch(field.type) {
+            case 'index':
             case 'fixed':
             case 'variable': {
-                if((length !== undefined) && (length < field.length))
-                    return;
-                else
-                    length = field.length;
-                var value = this.decodeValue(buffer, offset, length, field.format);
+                var value = this.decodeValue(buffer, offset, field.length, field.format);
                 if((field.type == 'fixed') && (value != field.value[0]))
-                    return;
+                    throw "value mismatched for fixed field";
+                    //return;
+                if(field.type == 'index') {
+                    for(var item of field.value) {
+                        if(item.value == value)
+                            return this.decode(buffer, offset, length, item.id);
+                    }
+                }
                 var object = new Object();
                 object[field.name] = value;
                 return object;
             }
             case 'combination': {
                 var object = new Object();
-                var iOffset = 0;
+                var iOffset = offset;
                 for(var iField of field.value) {
                     var iObject = this.decodeField(buffer, iOffset, iField.length, iField);
                     if(iObject === undefined)
@@ -133,6 +149,8 @@ export default class CSLMessage {
             case 'bcd':
                 var bcd = buffer[offset];
                 return (bcd >> 4) * 10 + (bcd % 16);
+            default:
+                throw "unsupported format";
         }
     }
 }
