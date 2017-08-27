@@ -166,6 +166,17 @@ export default class CSLMessage {
                 }
                 return object;
             }
+            case 'array': {
+                var array = new Array();
+                var objectField = field.value[0];
+                var iOffset = offset;
+                while(iOffset < buffer.length) {
+                    var object = this.decodeField(buffer, iOffset, objectField.length, objectField);
+                    array.push(object);
+                    iOffset += objectField.length;
+                }
+                return array;
+            }
         }
     }
 
