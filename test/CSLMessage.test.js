@@ -527,3 +527,131 @@ describe('array', ()=>{
         should(a[2].interval).equal(3);
     })
 });
+
+var message = require('./csl-message');
+describe('message', ()=>{
+    
+    var csl = new CSLMessage(message);
+    
+    describe('battery', ()=>{
+        var commandId = 1;
+        var data = {
+            "battery-level": batteryLevel
+        };
+        var batteryLevel = 0;
+        var array = csl.encode(null, 'battery-get');
+        var a = csl.decode(array, 0, array.length, 'battery-get');
+        should(a.command).equal(commandId);
+        array = csl.encode(data, 'battery-data');
+        a = csl.decode(array, 0, array.length, 'battery-data');
+        should(a.command).equal(commandId);
+        should(a["battery-level"]).equal(batteryLevel);
+    });
+    
+    describe('item-name', ()=>{
+        var commandId = 2;
+        var name = "exampleitemname";
+        var data = {
+            "name": name
+        };
+        var array = csl.encode(data, 'item-name-set');
+        var a = csl.decode(array, 0, array.length, 'item-name-set');
+        should(a.command).equal(commandId);
+        should(a.name).equal(name);
+        array = csl.encode(null, 'item-name-get');
+        a = csl.decode(array, 0, array.length, 'item-name-get');
+        should(a.command).equal(commandId);
+        array = csl.encode(data, 'item-name-data');
+        a = csl.decode(array, 0, array.length, 'item-name-data');
+        should(a.command).equal(commandId);
+        should(a.name).equal(name);
+    });
+
+    function shouldObjectEqual(x, y) {
+        if(x instanceof Object)
+            for(var key in y)
+                shouldObjectEqual(x[key], y[key]);
+        else if(x instanceof Array) {
+            should(x.length).equal(y.length);
+            for(var i=0; i<x.length; i++)
+                shouldObjectEqual(x[i], y[i]);
+        }
+        else
+            should(x).equal(y);   
+    }
+
+    describe('config', ()=>{
+        var commandId = 4;
+        var data = {
+            "production-date": {
+                "year": 17,
+                "month": 8,
+                "day": 27
+            },
+            "expiry-date": {
+                "year": 17,
+                "month": 9,
+                "day": 1
+            },
+            "start-time": Math.floor(new Date().getTime()/1000),
+            "default-measure-interval": 0,
+            "cool-down-timers": [
+                {
+                    "time": 1,
+                    "interval": 2
+                },
+                {
+                    "time": 2,
+                    "interval": 3
+                },
+                {
+                    "time": 3,
+                    "interval": 4
+                }
+            ],
+            "unit": 0
+        };
+        var array = csl.encode(data, 'config-set');
+        var a = csl.decode(array, 0, array.length, 'config-set');
+        should(a.command).equal(commandId);
+        shouldObjectEqual(a, data);
+        array = csl.encode(null, 'config-get');
+        a = csl.decode(array, 0, array.length, 'config-get');
+        should(a.command).equal(commandId);
+        array = csl.encode(data, 'config-data');
+        a = csl.decode(array, 0, array.length, 'config-data');
+        should(a.command).equal(commandId);
+        shouldObjectEqual(a, data);
+    });
+
+    describe('temerature-record', ()=>{
+        var commandId = 6;
+        var data = {
+            "temperature-records": [
+                {
+                    "time": 123456,
+                    "temperature": 12
+                },
+                {
+                    "time": 234567,
+                    "temperature": 50
+                },
+                {
+                    "time": 345678,
+                    "temperature": 107
+                },
+                {
+                    "time": 0,
+                    "temperature": 0
+                }
+            ]
+        };
+        var array = csl.encode(null, 'temperature-record-get');
+        var a = csl.decode(array, 0, array.length, 'temperature-record-get');
+        should(a.command).equal(commandId);
+        array = csl.encode(data, 'temperature-record-data');
+        a = csl.decode(array, 0, array.length, 'temperature-record-data');
+        should(a.command).equal(commandId);
+        shouldObjectEqual(a, data);
+    });
+});

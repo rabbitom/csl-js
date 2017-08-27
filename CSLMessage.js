@@ -48,38 +48,39 @@ export default class CSLMessage {
             }
             field.template = null;
         }
+        var value;
+        if(object != null)
+            value = (field.name === undefined) ? object : object[field.name];        
         switch(field.type) {
             case 'fixed':
                 return this.encodeValue(field.length, field.format, field.value);
-            case 'variable': {
-                var value = object[field.name];
+            case 'variable':
                 return this.encodeValue(field.length, field.format, value);
-            }
             case 'index': {
-                var value = object[field.name];
                 for(var item of field.value) {
                     if(item.value == value)
                         return this.encode(object, item.id);
                 }
+                throw "value not found in index: " + value;
             }
             case 'combination': {
                 var array = new Uint8Array(field.length);
                 var offset = 0;
                 for(var iField of field.value) {
-                    var iArray = this.encodeField(object, iField);
+                    var iArray = this.encodeField(value, iField);
                     array.set(iArray, offset);
                     offset += iArray.length;
                 }
                 return array;
             }
             case 'array': {
-                if(!(object instanceof Array))
-                    throw "could not encode object as array";
+                if(!(value instanceof Array))
+                    throw "could not encode as array: " + JSON.stringify(value);
                 var array = new Uint8Array(field.length);
                 var offset = 0;
                 var itemField = field.value[0];
-                for(var i=0; i<object.length; i++) {
-                    var itemArray = this.encodeField(object[i], itemField);
+                for(var i=0; i<value.length; i++) {
+                    var itemArray = this.encodeField(value[i], itemField);
                     if(offset + itemArray.length > field.length)
                         throw 'array is too short';
                     array.set(itemArray, offset);
@@ -135,23 +136,26 @@ export default class CSLMessage {
         if((length !== undefined) && (length < field.length))
             throw "length too short for field";
             //return;
+        var result;
         switch(field.type) {
             case 'index':
             case 'fixed':
             case 'variable': {
                 var value = this.decodeValue(buffer, offset, field.length, field.format);
                 if((field.type == 'fixed') && (value != field.value[0]))
-                    throw "value mismatched for fixed field";
+                    throw "value mismatch for fixed field";
                     //return;
                 if(field.type == 'index') {
                     for(var item of field.value) {
                         if(item.value == value)
                             return this.decode(buffer, offset, length, item.id);
                     }
+                    if(result === undefined)
+                        throw "value mismatch for index field";
                 }
-                var object = new Object();
-                object[field.name] = value;
-                return object;
+                else
+                    result = value;
+                break;
             }
             case 'combination': {
                 var object = new Object();
@@ -159,24 +163,33 @@ export default class CSLMessage {
                 for(var iField of field.value) {
                     var iObject = this.decodeField(buffer, iOffset, iField.length, iField);
                     if(iObject === undefined)
-                        return;
+                        throw "decode combination field failed";
                     iOffset += iField.length;
                     for(var key in iObject)
                         object[key] = iObject[key];
                 }
-                return object;
+                result = object;
+                break;
             }
             case 'array': {
                 var array = new Array();
                 var objectField = field.value[0];
                 var iOffset = offset;
                 while(iOffset < buffer.length) {
-                    var object = this.decodeField(buffer, iOffset, objectField.length, objectField);
-                    array.push(object);
+                    var iObject = this.decodeField(buffer, iOffset, objectField.length, objectField);
+                    array.push(iObject);
                     iOffset += objectField.length;
                 }
-                return array;
+                result = array;
+                break;
             }
+        }
+        if(field.name === undefined)
+            return result;
+        else {
+            var object = new Object();
+            object[field.name] = result;
+            return object;
         }
     }
 
