@@ -143,11 +143,11 @@ var CSLMessage = function () {
     function CSLMessage(pattern) {
         _classCallCheck(this, CSLMessage);
 
-        var fields = new Map();
-        var templates = new Map();
+        var fields = new Object();
+        var templates = new Object();
         var addField = function addField(field) {
-            if (field.id) fields.set(field.id, field);
-            if (field['as-template']) templates.set(field['as-template'], field);
+            if (field.id) fields[field.id] = field;
+            if (field['as-template']) templates[field['as-template']] = field;
             if (field.type == 'combination' || field.type == 'array') {
                 var _iteratorNormalCompletion = true;
                 var _didIteratorError = false;
@@ -214,7 +214,7 @@ var CSLMessage = function () {
         key: 'encode',
         value: function encode(object, fieldId) {
             var field = this.defaultField;
-            if (fieldId !== undefined) field = this.fields.get(fieldId);
+            if (fieldId !== undefined) field = this.fields[fieldId];
             if (field == null) throw "no field to encode: " + fieldId;
             return this.encodeField(object, field);
         }
@@ -222,7 +222,7 @@ var CSLMessage = function () {
         key: 'encodeField',
         value: function encodeField(object, field) {
             if (field.template) {
-                var template = this.templates.get(field.template);
+                var template = this.templates[field.template];
                 if (template === undefined) throw "no template found: " + field.template;
                 for (var key in template) {
                     if (key != 'id' && key != 'as-template' && field[key] === undefined) field[key] = template[key];
@@ -345,7 +345,7 @@ var CSLMessage = function () {
         key: 'decode',
         value: function decode(buffer, offset, length, fieldId) {
             var field = this.defaultField;
-            if (fieldId !== undefined) field = this.fields.get(fieldId);
+            if (fieldId !== undefined) field = this.fields[fieldId];
             if (field == null) throw "no field to decode: " + fieldId;
             return this.decodeField(buffer, offset, length, field);
         }

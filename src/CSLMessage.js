@@ -1,13 +1,13 @@
 class CSLMessage {
 
     constructor(pattern) {
-        var fields = new Map();
-        var templates = new Map();
+        var fields = new Object();
+        var templates = new Object();
         var addField = function(field) {
             if(field.id)
-                fields.set(field.id, field);
+                fields[field.id] = field;
             if(field['as-template'])
-                templates.set(field['as-template'], field);
+                templates[field['as-template']] = field;
             if((field.type == 'combination') || (field.type == 'array'))
                 for(var subField of field.value)
                     addField(subField);
@@ -28,7 +28,7 @@ class CSLMessage {
     encode(object, fieldId) {
         var field = this.defaultField;
         if(fieldId !== undefined)
-            field = this.fields.get(fieldId);
+            field = this.fields[fieldId];
         if(field == null)
             throw "no field to encode: " + fieldId;
         return this.encodeField(object, field);
@@ -36,7 +36,7 @@ class CSLMessage {
 
     encodeField(object, field) {
         if(field.template) {
-            var template = this.templates.get(field.template);
+            var template = this.templates[field.template];
             if(template === undefined)
                 throw "no template found: " + field.template;
             for(var key in template) {
@@ -120,7 +120,7 @@ class CSLMessage {
     decode(buffer, offset, length, fieldId) {
         var field = this.defaultField;
         if(fieldId !== undefined)
-            field = this.fields.get(fieldId);
+            field = this.fields[fieldId];
         if(field == null)
             throw "no field to decode: " + fieldId;
         return this.decodeField(buffer, offset, length, field);
