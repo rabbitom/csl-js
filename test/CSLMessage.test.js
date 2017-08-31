@@ -533,6 +533,13 @@ describe('message', ()=>{
     
     var csl = new CSLMessage(message);
     
+    describe('index', ()=>{
+        var array = [1, 0];
+        var a = csl.decode(array, 0, array.length, 'csl-data');
+        should(a.command).equal(1);
+        should(a["battery-level"]).equal(0);
+    });
+
     describe('battery', ()=>{
         var commandId = 1;
         var data = {

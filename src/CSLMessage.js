@@ -34,7 +34,7 @@ class CSLMessage {
         return this.encodeField(object, field);
     }
 
-    encodeField(object, field) {
+    inflateFieldTemplate(field) {
         if(field.template) {
             var template = this.templates[field.template];
             if(template === undefined)
@@ -45,6 +45,10 @@ class CSLMessage {
             }
             field.template = null;
         }
+    }
+
+    encodeField(object, field) {
+        this.inflateFieldTemplate(field);
         var value;
         if(object != null)
             value = (field.name === undefined) ? object : object[field.name];        
@@ -127,6 +131,7 @@ class CSLMessage {
     }
 
     decodeField(buffer, offset, length, field) {
+        this.inflateFieldTemplate(field);
         if(offset === undefined)
             offset = 0;
         if((length !== undefined) && (length < field.length))

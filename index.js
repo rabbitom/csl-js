@@ -219,8 +219,8 @@ var CSLMessage = function () {
             return this.encodeField(object, field);
         }
     }, {
-        key: 'encodeField',
-        value: function encodeField(object, field) {
+        key: 'inflateFieldTemplate',
+        value: function inflateFieldTemplate(field) {
             if (field.template) {
                 var template = this.templates[field.template];
                 if (template === undefined) throw "no template found: " + field.template;
@@ -229,6 +229,11 @@ var CSLMessage = function () {
                 }
                 field.template = null;
             }
+        }
+    }, {
+        key: 'encodeField',
+        value: function encodeField(object, field) {
+            this.inflateFieldTemplate(field);
             var value;
             if (object != null) value = field.name === undefined ? object : object[field.name];
             switch (field.type) {
@@ -352,6 +357,7 @@ var CSLMessage = function () {
     }, {
         key: 'decodeField',
         value: function decodeField(buffer, offset, length, field) {
+            this.inflateFieldTemplate(field);
             if (offset === undefined) offset = 0;
             if (length !== undefined && length < field.length) throw "length too short for field";
             var result;
