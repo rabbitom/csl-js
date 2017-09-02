@@ -179,9 +179,9 @@ export default class CSLMessage {
             case 'array': {
                 var array = new Array();
                 var objectField = field.value[0];
-                var iOffset = offset;
-                while(iOffset < buffer.length) {
-                    var iObject = this.decodeField(buffer, iOffset, objectField.length, objectField);
+                var iOffset = 0;
+                while(iOffset < field.length) {
+                    var iObject = this.decodeField(buffer, offset + iOffset, objectField.length, objectField);
                     array.push(iObject);
                     iOffset += objectField.length;
                 }
