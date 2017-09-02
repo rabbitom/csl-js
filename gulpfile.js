@@ -12,7 +12,7 @@ gulp.task('clear', () => {
 });
 
 gulp.task("pack", function(){
-    return gulp.src(["src/CSLUtility.js", "src/CSLMessage.js"])
+    return gulp.src(["src/CSLUtility.js", "src/CSLMessage.js", "src/polyfill.js"])
     .pipe(babel())
     .pipe(concat(artifact))
     .pipe(gulp.dest(dest));
